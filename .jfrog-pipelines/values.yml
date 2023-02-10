@@ -1,0 +1,5 @@
+repoPath: harshkumar1/softwarecuratetask
+mainBranch: main
+gitIntegration: Github
+artIntegration: Artifactory
+# windowsNodePool: win_dyna
