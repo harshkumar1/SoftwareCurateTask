@@ -1,5 +1,5 @@
 resources:
-  - name: pipelines.scan_copy.cacheCreatedWebhookRes
+  - name: cacheCreatedWebhookRes
     type: IncomingWebhook
     configuration:
       webhookName: curation_webhook
