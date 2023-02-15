@@ -1,125 +1,19 @@
-template: true
-valuesFilePath: ./values.yml
-
 resources:
-  - name: curate_artifact_task_gitrepo
-    type: GitRepo
+  - name: pipelines.scan_copy.cacheCreatedWebhookRes
+    type: IncomingWebhook
     configuration:
-      path: {{ .Values.repoPath }}
-      gitProvider: {{ .Values.gitIntegration }}
-      branches:
-        include: ^{{ .Values.mainBranch }}$
-      cloneProtocol: https
-
+      webhookName: curation_webhook
+ 
 pipelines:
-  - name: curate_artifact_task_test
-    configuration:
-      jfrogCliVersion: 2
-      runtime:
-        type: image
-        image:
-          custom:
-            name: releases-docker.jfrog.io/jfrog/pipelines-u18node
-            tag: "16"
-            autoPull: true
-      environmentVariables:
-        readOnly:
-          RESOLVE_REPO: npm-virtual
+  - name: scan_copy
     steps:
-      - name: test_task
-        type: Bash
-        configuration:
-          environmentVariables:
-            JFROG_PIPELINES_DEBUG: "true"
-            artifactPath:
-              allowCustom: true
-              default: "updates/testing/37/Everything/x86_64/Packages/d/d-spy-1.4.0-1.fc37.x86_64.rpm"
-              values:
-                - "updates/testing/37/Everything/x86_64/Packages/d/d-spy-1.4.0-1.fc37.x86_64.rpm"
-                - "updates/testing/37/Everything/aarch64/Packages/0/0xFFFF-0.10-1.fc37.aarch64.rpm"
-          inputResources:
-            - name: curate_artifact_task_gitrepo
-          integrations:
-            - name: {{ .Values.artIntegration }}
-        execution:
+    - name: read_webhook_payload
+      type: Bash
+      configuration:
+        inputResources:
+          - name: cacheCreatedWebhookRes
+      execution:
           onExecute:
-            - pushd $res_curate_artifact_task_gitrepo_resourcePath
-            # Configure JFrog CLI
-            - jfrog npmc --repo-resolve $RESOLVE_REPO
-            # Install npm dependencies
-            - jfrog npm install
-            # run tests
-            - npm run test:coverage
-            # Build task runnable script bundled with dependencies
-            - npm run dist
-            - popd
-
-            # Run task
-            - task: $res_curate_artifact_task_gitrepo_resourcePath
-              id: curate_artifact_test
-              input:
-                remoteRepositoryName: "rpm-remote"
-                localRepositoryName: "rpm-dev-local"
-                artifactPath: "${artifactPath}"
-
-            # Check task output
-            - echo "build_name output is $OUT_curate_artifact_test_build_name"
-            - echo "build_number output is $OUT_curate_artifact_test_build_number"
-          onComplete:
-            - echo "Step done!"
-
-  # {{ if .Values.windowsNodePool }}
-  # - name: curate_artifact_task_win_test
-  #   configuration:
-  #     jfrogCliVersion: 2
-  #     nodePool: {{ .Values.windowsNodePool }}
-  #     runtime:
-  #       type: image
-  #       image:
-  #         custom:
-  #           name: releases-docker.jfrog.io/jfrog/pipelines-w19node
-  #           tag: "16"
-  #           autoPull: true
-  #     environmentVariables:
-  #       readOnly:
-  #         RESOLVE_REPO: npm-virtual
-  #   steps:
-  #     - name: win_test_task
-  #       type: PowerShell
-  #       configuration:
-  #         environmentVariables:
-  #           artifactPath:
-  #             allowCustom: true
-  #             default: "updates/testing/37/Everything/x86_64/Packages/d/d-spy-1.4.0-1.fc37.x86_64.rpm"
-  #             values:
-  #               - "updates/testing/37/Everything/x86_64/Packages/d/d-spy-1.4.0-1.fc37.x86_64.rpm"
-  #               - "updates/testing/37/Everything/aarch64/Packages/0/0xFFFF-0.10-1.fc37.aarch64.rpm"
-  #         inputResources:
-  #           - name: curate_artifact_task_gitrepo
-  #         integrations:
-  #           - name: {{ .Values.artIntegration }}
-  #       execution:
-  #         onExecute:
-  #           - pushd $res_curate_artifact_task_gitrepo_resourcePath
-  #           # Configure JFrog CLI
-  #           - jfrog npmc --repo-resolve $RESOLVE_REPO
-  #           # Install npm dependencies
-  #           - jfrog npm install
-  #           # Build task runnable script bundled with dependencies
-  #           - npm run dist
-  #           - popd
-
-  #           # Run task
-  #           - task: $res_curate_artifact_task_gitrepo_resourcePath
-  #             id: curate_artifact_test
-  #             input:
-  #               remoteRepositoryName: "rpm-remote"
-  #               localRepositoryName: "rpm-dev-local"
-  #               artifactPath: "$env:artifactPath"
-
-  #           # Check task output
-  #           - echo "build_name output is $OUT_curate_artifact_test_build_name"
-  #           - echo "build_number output is $OUT_curate_artifact_test_build_number"
-  #         onComplete:
-  #           - echo "Step done!"
-  # {{ end }}
+            - echo "$res_MyIncomingWebhookResource_payload" | jq '.' > payload.json
+            - read_json payload.json "LESSER_SECRET_FORMULA"
+            - echo payload.json
