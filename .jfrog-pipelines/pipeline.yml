@@ -2,7 +2,7 @@ resources:
   - name: cacheCreatedWebhookRes
     type: IncomingWebhook
     configuration:
-      webhookName: curation_webhook
+      webhookName: sw_curate_iw
  
 pipelines:
   - name: scan_copy
