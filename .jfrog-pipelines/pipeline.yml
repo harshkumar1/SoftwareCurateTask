@@ -3,6 +3,10 @@ resources:
     type: IncomingWebhook
     configuration:
       webhookName: sw_curate_iw
+  - name: cached_artifact_build_info
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: {{ .Values.artIntegration }}
  
 pipelines:
   - name: scan_copy
@@ -12,7 +16,50 @@ pipelines:
       configuration:
         inputResources:
           - name: cacheCreatedWebhookRes
+        outputResources:
+          - name: cached_artifact_build_info
       execution:
-          onExecute:
-            - echo "$res_cacheCreatedWebhookRes_payload" | jq '.' > payload.json
-            - cat payload.json
+        onExecute:
+          - echo "$res_cacheCreatedWebhookRes_payload" | jq '.' > payload.json
+          - cat payload.json
+          - echo read_json payload.json "repo_key"
+          - echo read_json payload.json "path"
+          #- jf docker scan reg1/repo1/img1:1.0.0
+#    - name: get_artifact
+#      type: Bash
+#      configuration:
+#        inputResources:
+#          - name: cacheCreatedWebhookRes
+#      execution:
+#        onExecute:
+#          - docker login harshk.jfrogdev.org -u admin -p cmVmdGtuOjAxOjAwMDAwMDAwMDA6WHRsRlJhM0dHSkdTSzlGTTE0ZVhiS25TOHVG
+#          - docker pull harshk.jfrogdev.org/docker-remote/alpine:3.14 
+#    - name: copy_artifact
+#      type: Bash
+#      configuration:
+#        inputResources:
+#          - name: cacheCreatedWebhookRes
+#      execution:
+#        onExecute:
+#          - jf rt cp repo_key+path
+#          - docker pull harshk.jfrogdev.org/docker-remote/alpine:3.14 
+#      - name: scan
+#        type: XrayScan
+#        configuration:
+#          failOnScan: false
+#          inputResources:
+#            - name: cached_artifact_build_info
+#              trigger: false
+#          outputResources:
+#            - name: curated_artifact_build_info
+#        execution:
+#          onStart:
+#            - echo res_cached_artifact_build_info_name
+#            - echo res_cached_artifact_build_buildName
+#          onSuccess:
+#            - echo "Job well done!"
+#          onFailure:
+#            - echo "uh oh, something went wrong"
+#          onComplete: #always
+#            - echo "Cleaning up some stuff"
+
