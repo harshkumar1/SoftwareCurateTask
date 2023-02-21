@@ -18,8 +18,8 @@ pipelines:
         onExecute:
           - echo "$res_cacheCreatedWebhookRes_payload" | jq '.' > payload.json
           - cat payload.json
-          - echo read_json payload.json "repo_key"
-          - echo read_json payload.json "path"
+          - read_json payload.json "repo_key"
+          - read_json payload.json "path"
           #- jf docker scan reg1/repo1/img1:1.0.0
 #    - name: get_artifact
 #      type: Bash
