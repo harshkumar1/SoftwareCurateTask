@@ -22,6 +22,10 @@ pipelines:
           - path=$(read_json payload.json "data.path")
           - name=$(read_json payload.json "data.name")
           - echo "$repo_key" "$name" "$path"
+          - docker_path=$($path%$name*)
+          - echo "$docker_path"
+          #- tmp=${a#*_}   # remove prefix ending in "_"
+          #- b=${tmp%_*}   # remove suffix starting with "_"
           #- echo name
           #- echo path
           #- jf docker scan reg1/repo1/img1:1.0.0
