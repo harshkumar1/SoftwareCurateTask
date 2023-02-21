@@ -11,6 +11,9 @@ pipelines:
     steps:
     - name: read_webhook_payload
       type: Bash
+      configuration:
+        inputResources:
+          - name: cacheCreatedWebhookRes
       execution:
         onExecute:
           - echo "$res_cacheCreatedWebhookRes_payload" | jq '.' > payload.json
