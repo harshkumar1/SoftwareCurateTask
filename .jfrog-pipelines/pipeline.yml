@@ -21,9 +21,9 @@ pipelines:
           - repo_key=$(read_json payload.json "data.repo_key")
           - path=$(read_json payload.json "data.path")
           - name=$(read_json payload.json "data.name")
-          - echo repo_key
-          - echo name
-          - echo path
+          - echo "$repo_key" "$name" "$path"
+          #- echo name
+          #- echo path
           #- jf docker scan reg1/repo1/img1:1.0.0
 #    - name: get_artifact
 #      type: Bash
