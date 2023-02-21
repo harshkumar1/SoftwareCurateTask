@@ -18,9 +18,9 @@ pipelines:
         onExecute:
           - echo "$res_cacheCreatedWebhookRes_payload" | jq '.' > payload.json
           - cat payload.json
-          - repo_key = read_json payload.json "data.repo_key"
-          - path = read_json payload.json "data.path"
-          - name = read_json payload.json "data.name"
+          - repo_key=$(read_json payload.json "data.repo_key")
+          - path=$(read_json payload.json "data.path")
+          - name=$(read_json payload.json "data.name")
           - echo repo_key
           - echo name
           - echo path
